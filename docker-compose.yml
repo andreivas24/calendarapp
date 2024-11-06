@@ -2,11 +2,11 @@ version: '3.3'
 
 services:
   app:
-    image: 'calendarapp:latest'
+    image: 'calendarapp-be:latest'
     build:
-      context: .
+      context: ./backend
       dockerfile: ./dockerfile
-    container_name: calendarapp
+    container_name: calendarapp-be
     depends_on:
       - postgres-db
     environment:
@@ -18,7 +18,16 @@ services:
       - SPRING_JPA_HIBERNATE_DDL_AUTO=update
     ports:
       - "8080:8080"
-
+  
+  frontend-app:
+    image: 'calendarapp-fe:latest'
+    build:
+      context: ./frontend
+      dockerfile: ./dockerfile
+    container_name: calendarapp-fe
+    ports:
+      - "4200:4200"
+  
   postgres-db:
     image: postgres
     container_name: postgres-db
