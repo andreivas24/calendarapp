@@ -9,6 +9,9 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
+
 @Data
 @Builder
 @NoArgsConstructor
@@ -19,4 +22,13 @@ public class Event {
     @Id
     @GeneratedValue
     private Long id;
+
+    private String title;
+    private String description;
+
+    private LocalDateTime start;
+    private Duration duration;
+
+    private boolean periodic;
+    private Duration frequency;
 }

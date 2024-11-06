@@ -19,14 +19,14 @@ services:
     ports:
       - "8080:8080"
   
-  frontend-app:
-    image: 'calendarapp-fe:latest'
-    build:
-      context: ./frontend
-      dockerfile: ./dockerfile
-    container_name: calendarapp-fe
-    ports:
-      - "4200:4200"
+  # frontend-app:
+  #   image: 'calendarapp-fe:latest'
+  #   build:
+  #     context: ./frontend
+  #     dockerfile: ./dockerfile
+  #   container_name: calendarapp-fe
+  #   ports:
+  #     - "4200:4200"
   
   postgres-db:
     image: postgres
