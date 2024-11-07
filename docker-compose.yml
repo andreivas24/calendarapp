@@ -1,7 +1,7 @@
-version: '3.3'
+version: '3.9'
 
 services:
-  app:
+  be-app:
     image: 'calendarapp-be:latest'
     build:
       context: ./backend
@@ -18,16 +18,18 @@ services:
       - SPRING_JPA_HIBERNATE_DDL_AUTO=update
     ports:
       - "8080:8080"
-  
-  # frontend-app:
-  #   image: 'calendarapp-fe:latest'
-  #   build:
-  #     context: ./frontend
-  #     dockerfile: ./dockerfile
-  #   container_name: calendarapp-fe
-  #   ports:
-  #     - "4200:4200"
-  
+    profiles: ["be", "def"]
+
+  fe-app:
+    image: 'calendarapp-fe:latest'
+    build:
+      context: ./frontend
+      dockerfile: ./dockerfile
+    container_name: calendarapp-fe
+    ports:
+      - "4200:4200"
+    profiles: ["def"]
+
   postgres-db:
     image: postgres
     container_name: postgres-db
@@ -35,3 +37,4 @@ services:
       - POSTGRES_USER=myuser
       - POSTGRES_PASSWORD=mypassword
       - POSTGRES_DB=mydatabase
+    profiles: ["be", "def"]
