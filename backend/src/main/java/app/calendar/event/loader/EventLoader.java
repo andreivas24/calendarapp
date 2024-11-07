@@ -17,10 +17,8 @@ public class EventLoader implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-        // Clear existing data to avoid duplication
         eventRepository.deleteAll();
 
-        // Create sample non-periodic events
         Event meeting = Event.builder()
                 .title("Team Meeting")
                 .description("Monthly team sync")
@@ -56,13 +54,9 @@ public class EventLoader implements CommandLineRunner {
                 .frequency(Duration.ofDays(7))  // Repeats every week
                 .build();
 
-        // Save events to the database
         eventRepository.save(meeting);
         eventRepository.save(webinar);
         eventRepository.save(dailyStandup);
         eventRepository.save(weeklyReview);
-
-        // Print a message to confirm data loading
-        System.out.println("Sample events loaded into the database.");
     }
 }

@@ -1,4 +1,4 @@
-package app.calendar;
+package app.calendar.user;
 
 import app.calendar.user.presentation.request.AuthenticationRequest;
 import app.calendar.user.presentation.request.RegisterRequest;

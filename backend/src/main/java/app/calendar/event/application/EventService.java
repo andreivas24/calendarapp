@@ -1,7 +1,8 @@
 package app.calendar.event.application;
 
 import app.calendar.event.domain.Event;
-import app.calendar.event.presentation.response.EventResponse;
+import app.calendar.event.presentation.exception.BadRequestException;
+import app.calendar.event.presentation.response.EventBlob;
 import app.calendar.event.repository.EventRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -10,7 +11,7 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Optional;
 
 @Service
 public class EventService {
@@ -18,65 +19,70 @@ public class EventService {
     @Autowired
     private EventRepository eventRepository;
 
-    public List<EventResponse> getEventsInNextHour() {
-        LocalDateTime now = LocalDateTime.now();
-        LocalDateTime oneHourLater = now.plusHours(1);
-
-        List<Event> upcomingEvents = retrieveUpcomingEvents(now, oneHourLater);
-        return upcomingEvents.stream()
-                .map(this::mapToEventResponse)
-                .collect(Collectors.toList());
-    }
-
-    private List<Event> retrieveUpcomingEvents(LocalDateTime now, LocalDateTime oneHourLater) {
+    public List<EventBlob> getEventsInInterval(LocalDateTime start, LocalDateTime end) {
         List<Event> allEvents = eventRepository.findAll();
-        List<Event> upcomingEvents = new ArrayList<>();
+        List<EventBlob> eventBlobsInInterval = new ArrayList<>();
 
         for (Event event : allEvents) {
             if (!event.isPeriodic()) {
-                if (isEventInNextHour(event.getStart(), event.getDuration(), now, oneHourLater)) {
-                    upcomingEvents.add(event);
+                if (isEventInInterval(event.getStart(), event.getDuration(), start, end)) {
+                    eventBlobsInInterval.add(EventBlob.mapFromEvent(event));
                 }
             } else {
-                addRecurringEventOccurrences(event, now, oneHourLater, upcomingEvents);
+                addRecurringEventOccurrences(event, start, end, eventBlobsInInterval);
             }
         }
-        return upcomingEvents;
+        return eventBlobsInInterval;
     }
 
-    private boolean isEventInNextHour(LocalDateTime start, Duration duration, LocalDateTime now, LocalDateTime oneHourLater) {
-        LocalDateTime eventEnd = start.plus(duration);
-        return (start.isBefore(oneHourLater) && eventEnd.isAfter(now));
+    private boolean isEventInInterval(LocalDateTime eventStart, Duration duration, LocalDateTime intervalStart, LocalDateTime intervalEnd) {
+        LocalDateTime eventEnd = eventStart.plus(duration);
+        return eventStart.isBefore(intervalEnd) && eventEnd.isAfter(intervalStart);
     }
 
-    private void addRecurringEventOccurrences(Event event, LocalDateTime now, LocalDateTime oneHourLater, List<Event> upcomingEvents) {
+    private void addRecurringEventOccurrences(Event event, LocalDateTime intervalStart, LocalDateTime intervalEnd, List<EventBlob> eventBlobsInInterval) {
         LocalDateTime nextOccurrence = event.getStart();
 
-        while (nextOccurrence.isBefore(oneHourLater)) {
-            if (isEventInNextHour(nextOccurrence, event.getDuration(), now, oneHourLater)) {
-                upcomingEvents.add(createEventOccurrence(event, nextOccurrence));
+        while (nextOccurrence.isBefore(intervalEnd)) {
+            if (isEventInInterval(nextOccurrence, event.getDuration(), intervalStart, intervalEnd)) {
+                EventBlob eventBlob = EventBlob.builder()
+                        .id(event.getId())
+                        .title(event.getTitle())
+                        .description(event.getDescription())
+                        .start(nextOccurrence)
+                        .duration(event.getDuration())
+                        .build();
+                eventBlobsInInterval.add(eventBlob);
             }
             nextOccurrence = nextOccurrence.plus(event.getFrequency());
         }
     }
 
-    private Event createEventOccurrence(Event originalEvent, LocalDateTime occurrenceTime) {
-        return Event.builder()
-                .id(originalEvent.getId())
-                .title(originalEvent.getTitle())
-                .description(originalEvent.getDescription())
-                .start(occurrenceTime)
-                .duration(originalEvent.getDuration())
-                .periodic(false)
-                .build();
+    public Event createEvent(Event event) {
+        return eventRepository.save(event);
     }
 
-    private EventResponse mapToEventResponse(Event event) {
-        return new EventResponse(
-                event.getTitle(),
-                event.getDescription(),
-                event.getStart(),
-                event.getDuration()
-        );
+    public Optional<Event> getEventById(Long id) {
+        return eventRepository.findById(id);
+    }
+
+    public Optional<Event> updateEvent(Long id, Event eventDetails) {
+        return eventRepository.findById(id).map(event -> {
+            event.setTitle(eventDetails.getTitle());
+            event.setDescription(eventDetails.getDescription());
+            event.setStart(eventDetails.getStart());
+            event.setDuration(eventDetails.getDuration());
+            event.setPeriodic(eventDetails.isPeriodic());
+            event.setFrequency(eventDetails.getFrequency());
+            return eventRepository.save(event);
+        });
+    }
+
+    public boolean deleteEvent(Long id) {
+        if (eventRepository.existsById(id)) {
+            eventRepository.deleteById(id);
+            return true;
+        }
+        return false;
     }
 }
