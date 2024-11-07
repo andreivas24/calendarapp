@@ -2,6 +2,7 @@ package app.calendar.event.presentation;
 
 import app.calendar.event.application.EventService;
 import app.calendar.event.domain.Event;
+import app.calendar.event.presentation.authorization.UserOwnsEvent;
 import app.calendar.event.presentation.exception.BadRequestException;
 import app.calendar.event.presentation.exception.EventNotFoundException;
 import app.calendar.event.presentation.response.EventInfo;
@@ -28,7 +29,7 @@ public class EventResource {
         if (start.isAfter(end)) {
             throw new BadRequestException("Start time cannot be after end time.");
         }
-        return null;
+        return eventService.getEventsInInterval(start, end);
     }
 
     @PostMapping("/")
@@ -42,6 +43,7 @@ public class EventResource {
     }
 
     @GetMapping("/{id}")
+    @UserOwnsEvent
     public ResponseEntity<EventInfo> getEventById(@PathVariable Long id) {
         Optional<Event> eventBlob = eventService.getEventById(id);
         return eventBlob
@@ -50,6 +52,7 @@ public class EventResource {
     }
 
     @PutMapping("/{id}")
+    @UserOwnsEvent
     public ResponseEntity<EventInfo> updateEvent(@PathVariable Long id, @RequestBody Event eventDetails) {
         Event updatedEvent = eventService.updateEvent(id, eventDetails)
                 .orElseThrow(() -> new EventNotFoundException(id));
@@ -58,6 +61,7 @@ public class EventResource {
     }
 
     @DeleteMapping("/{id}")
+    @UserOwnsEvent
     public ResponseEntity<Void> deleteEvent(@PathVariable Long id) {
         boolean deleted = eventService.deleteEvent(id);
         return deleted ? new ResponseEntity<>(HttpStatus.NO_CONTENT) : new ResponseEntity<>(HttpStatus.NOT_FOUND);

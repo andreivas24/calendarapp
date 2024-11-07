@@ -4,11 +4,17 @@ import app.calendar.event.application.EventService;
 import app.calendar.event.domain.Event;
 import app.calendar.event.presentation.response.EventBlob;
 import app.calendar.event.repository.EventRepository;
+import app.calendar.user.domain.User;
+import com.github.dockerjava.api.exception.UnauthorizedException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -165,4 +171,5 @@ public class EventServiceTest {
 
         assertFalse(isDeleted);
     }
+
 }

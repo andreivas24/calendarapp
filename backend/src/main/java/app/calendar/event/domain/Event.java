@@ -1,9 +1,7 @@
 package app.calendar.event.domain;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import app.calendar.user.domain.User;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -28,4 +26,8 @@ public class Event {
     private Duration duration;
     private boolean periodic;
     private Duration frequency;
+
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;  // Link to the User entity
 }

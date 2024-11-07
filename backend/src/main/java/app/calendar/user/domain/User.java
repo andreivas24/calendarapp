@@ -1,5 +1,6 @@
 package app.calendar.user.domain;
 
+import app.calendar.event.domain.Event;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -27,6 +28,10 @@ public class User implements UserDetails {
 
     @Enumerated(EnumType.STRING)
     private Role role;
+
+    @OneToMany(mappedBy = "user")
+    private List<Event> events;  // One user can have multiple events
+
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
