@@ -19,14 +19,14 @@ public class EventService {
     @Autowired
     private EventRepository eventRepository;
 
-    public List<EventBlob> getEventsInInterval(LocalDateTime start, LocalDateTime end) {
+    public List<Event> getEventsInInterval(LocalDateTime start, LocalDateTime end) {
         List<Event> allEvents = eventRepository.findAll();
-        List<EventBlob> eventBlobsInInterval = new ArrayList<>();
+        List<Event> eventBlobsInInterval = new ArrayList<>();
 
         for (Event event : allEvents) {
             if (!event.isPeriodic()) {
                 if (isEventInInterval(event.getStart(), event.getDuration(), start, end)) {
-                    eventBlobsInInterval.add(EventBlob.mapFromEvent(event));
+                    eventBlobsInInterval.add(event);
                 }
             } else {
                 addRecurringEventOccurrences(event, start, end, eventBlobsInInterval);
@@ -40,19 +40,12 @@ public class EventService {
         return eventStart.isBefore(intervalEnd) && eventEnd.isAfter(intervalStart);
     }
 
-    private void addRecurringEventOccurrences(Event event, LocalDateTime intervalStart, LocalDateTime intervalEnd, List<EventBlob> eventBlobsInInterval) {
+    private void addRecurringEventOccurrences(Event event, LocalDateTime intervalStart, LocalDateTime intervalEnd, List<Event> eventBlobsInInterval) {
         LocalDateTime nextOccurrence = event.getStart();
 
         while (nextOccurrence.isBefore(intervalEnd)) {
             if (isEventInInterval(nextOccurrence, event.getDuration(), intervalStart, intervalEnd)) {
-                EventBlob eventBlob = EventBlob.builder()
-                        .id(event.getId())
-                        .title(event.getTitle())
-                        .description(event.getDescription())
-                        .start(nextOccurrence)
-                        .duration(event.getDuration())
-                        .build();
-                eventBlobsInInterval.add(eventBlob);
+                eventBlobsInInterval.add(event);
             }
             nextOccurrence = nextOccurrence.plus(event.getFrequency());
         }

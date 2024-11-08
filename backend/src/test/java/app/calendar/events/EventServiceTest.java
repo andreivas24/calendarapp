@@ -4,17 +4,11 @@ import app.calendar.event.application.EventService;
 import app.calendar.event.domain.Event;
 import app.calendar.event.presentation.response.EventBlob;
 import app.calendar.event.repository.EventRepository;
-import app.calendar.user.domain.User;
-import com.github.dockerjava.api.exception.UnauthorizedException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -67,13 +61,13 @@ public class EventServiceTest {
 
         when(eventRepository.findAll()).thenReturn(Arrays.asList(event1, event2));
 
-        List<EventBlob> eventBlobs = eventService.getEventsInInterval(start, end);
+        List<Event> events = eventService.getEventsInInterval(start, end);
 
         verify(eventRepository, times(1)).findAll();
 
-        assertNotNull(eventBlobs);
-        assertEquals(1, eventBlobs.size()); // Only event1 should be returned in the interval
-        assertEquals("Event 1", eventBlobs.get(0).getTitle());
+        assertNotNull(events);
+        assertEquals(1, events.size()); // Only event1 should be returned in the interval
+        assertEquals("Event 1", events.get(0).getTitle());
     }
 
     @Test
@@ -83,12 +77,12 @@ public class EventServiceTest {
 
         when(eventRepository.findAll()).thenReturn(Arrays.asList(event1, event2));
 
-        List<EventBlob> eventBlobs = eventService.getEventsInInterval(start, end);
+        List<Event> events = eventService.getEventsInInterval(start, end);
 
         verify(eventRepository, times(1)).findAll();
 
-        assertNotNull(eventBlobs);
-        assertEquals(3, eventBlobs.size()); // Should include 2 periodic occurrences of event2 and event1
+        assertNotNull(events);
+        assertEquals(3, events.size()); // Should include 2 periodic occurrences of event2 and event1
     }
 
     @Test
